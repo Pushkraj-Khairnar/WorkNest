@@ -35,7 +35,6 @@ app.use(
     secure: config.NODE_ENV === "production",
     httpOnly: true,
     sameSite: "none", // Allow cross-origin cookies
-    domain: undefined, // Let the browser set the domain
   })
 );
 

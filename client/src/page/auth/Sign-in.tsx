@@ -1,3 +1,4 @@
+import React from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -25,6 +26,17 @@ const SignIn = () => {
   const [searchParams] = useSearchParams();
   const returnUrl = searchParams.get("returnUrl");
   const [showPassword, setShowPassword] = useState(false);
+  const [showDebug, setShowDebug] = useState(false);
+
+  // Add immediate debug info when component loads
+  React.useEffect(() => {
+    console.log('SignIn component loaded');
+    localStorage.setItem('loginDebug', JSON.stringify({
+      timestamp: new Date().toISOString(),
+      status: 'component_loaded',
+      message: 'SignIn component mounted'
+    }));
+  }, []);
 
   const { mutate, isPending } = useMutation({
     mutationFn: loginMutationFn,
@@ -48,16 +60,72 @@ const SignIn = () => {
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    if (isPending) return;
+    try {
+      if (isPending) return;
+
+      // Store debug info in localStorage so it persists through reloads
+      localStorage.setItem('loginDebug', JSON.stringify({
+        timestamp: new Date().toISOString(),
+        email: values.email,
+        status: 'attempting'
+      }));
+
+      console.log('Attempting to sign in with:', values.email);
 
     mutate(values, {
       onSuccess: (data) => {
+        // Store successful login data
+        localStorage.setItem('loginDebug', JSON.stringify({
+          timestamp: new Date().toISOString(),
+          email: values.email,
+          status: 'success',
+          response: data,
+          user: data.user,
+          currentWorkspace: data.user.currentWorkspace
+        }));
+
+        console.log('Login successful, response:', data);
         const user = data.user;
-        console.log(user);
+        console.log('User data:', user);
+        console.log('Current workspace:', user.currentWorkspace);
+        
         const decodedUrl = returnUrl ? decodeURIComponent(returnUrl) : null;
-        navigate(decodedUrl || `/workspace/${user.currentWorkspace}`);
+        
+        // Handle case where user has no current workspace
+        if (!user.currentWorkspace) {
+          console.log('User has no current workspace, redirecting to dashboard');
+          navigate('/dashboard');
+          return;
+        }
+        
+        const redirectUrl = decodedUrl || `/workspace/${user.currentWorkspace}`;
+        console.log('Redirecting to:', redirectUrl);
+        
+        // Store redirect info
+        localStorage.setItem('loginRedirect', redirectUrl);
+        localStorage.setItem('loginDebug', JSON.stringify({
+          timestamp: new Date().toISOString(),
+          status: 'navigating',
+          redirectUrl: redirectUrl,
+          user: user
+        }));
+        
+        // Use setTimeout to ensure navigation happens after state updates
+        setTimeout(() => {
+          console.log('Executing navigation to:', redirectUrl);
+          navigate(redirectUrl);
+        }, 100);
       },
       onError: (error) => {
+        // Store error data
+        localStorage.setItem('loginDebug', JSON.stringify({
+          timestamp: new Date().toISOString(),
+          email: values.email,
+          status: 'error',
+          error: error.message
+        }));
+
+        console.error('Login error:', error);
         toast({
           title: "Error",
           description: error.message,
@@ -65,6 +133,14 @@ const SignIn = () => {
         });
       },
     });
+    } catch (error) {
+      console.error('Error in onSubmit:', error);
+      localStorage.setItem('loginDebug', JSON.stringify({
+        timestamp: new Date().toISOString(),
+        status: 'error_in_onSubmit',
+        error: error.message
+      }));
+    }
   };
 
   return (
@@ -132,7 +208,20 @@ const SignIn = () => {
           {/* Login Form */}
           <div className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/20 dark:border-slate-700/50">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault(); // Explicitly prevent default
+                  console.log('Form submitted - preventDefault called');
+                  localStorage.setItem('loginDebug', JSON.stringify({
+                    timestamp: new Date().toISOString(),
+                    status: 'form_submitted',
+                    event: 'form_onSubmit',
+                    preventDefault: true
+                  }));
+                  form.handleSubmit(onSubmit)(e);
+                }} 
+                className="space-y-6"
+              >
                 {/* Google OAuth */}
                 <div className="space-y-4">
                   <GoogleOauthButton label="Continue" />
@@ -225,6 +314,22 @@ const SignIn = () => {
                     </>
                   )}
                 </Button>
+
+                {/* Test Button */}
+                <Button
+                  type="button"
+                  onClick={() => {
+                    console.log('Test button clicked');
+                    localStorage.setItem('loginDebug', JSON.stringify({
+                      timestamp: new Date().toISOString(),
+                      status: 'test_button_clicked'
+                    }));
+                    navigate('/dashboard');
+                  }}
+                  className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl"
+                >
+                  Test Navigation (Go to Dashboard)
+                </Button>
               </form>
             </Form>
 
@@ -254,6 +359,41 @@ const SignIn = () => {
                 Privacy Policy
               </a>
             </p>
+          </div>
+
+          {/* Debug Section */}
+          <div className="mt-4 text-center">
+            <button
+              type="button"
+              onClick={() => setShowDebug(!showDebug)}
+              className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+            >
+              {showDebug ? 'Hide Debug' : 'Show Debug'}
+            </button>
+            
+            {showDebug && (
+              <div className="mt-2 p-3 bg-slate-100 dark:bg-slate-700 rounded-lg text-left">
+                <h4 className="text-sm font-medium mb-2">Debug Info:</h4>
+                <pre className="text-xs overflow-auto max-h-32">
+                  {(() => {
+                    const debug = localStorage.getItem('loginDebug');
+                    const redirect = localStorage.getItem('loginRedirect');
+                    return JSON.stringify({ debug: debug ? JSON.parse(debug) : null, redirect }, null, 2);
+                  })()}
+                </pre>
+                <button
+                  type="button"
+                  onClick={() => {
+                    localStorage.removeItem('loginDebug');
+                    localStorage.removeItem('loginRedirect');
+                    setShowDebug(false);
+                  }}
+                  className="mt-2 text-xs text-red-600 hover:text-red-700"
+                >
+                  Clear Debug
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
