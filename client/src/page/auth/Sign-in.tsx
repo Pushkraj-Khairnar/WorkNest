@@ -1,5 +1,4 @@
-import React from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -23,8 +22,6 @@ import { useState } from "react";
 
 const SignIn = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const returnUrl = searchParams.get("returnUrl");
   const [showPassword, setShowPassword] = useState(false);
 
 
