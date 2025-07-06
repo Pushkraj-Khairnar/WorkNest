@@ -32,7 +32,7 @@ app.use(
     name: "session",
     keys: [config.SESSION_SECRET],
     maxAge: 24 * 60 * 60 * 1000,
-    secure: config.NODE_ENV === "production",
+    secure: true, // Always use secure in production
     httpOnly: true,
     sameSite: "none", // Allow cross-origin cookies
   })
@@ -96,7 +96,8 @@ app.get(
       message: "Session test",
       session: req.session,
       user: req.user,
-      cookies: req.headers.cookie
+      cookies: req.headers.cookie,
+      sessionID: (req.session as any).id
     });
   })
 );
