@@ -38,6 +38,8 @@ export const registerUserController = asyncHandler(
 
 export const loginController = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
+    console.log('Login attempt for email:', req.body.email);
+    
     passport.authenticate(
       "local",
       (
@@ -46,19 +48,27 @@ export const loginController = asyncHandler(
         info: { message: string } | undefined
       ) => {
         if (err) {
+          console.log('Passport auth error:', err);
           return next(err);
         }
 
         if (!user) {
+          console.log('Passport auth failed - no user returned');
           return res.status(HTTPSTATUS.UNAUTHORIZED).json({
             message: info?.message || "Invalid email or password",
           });
         }
 
+        console.log('Passport auth successful, user:', user._id);
+        
         req.logIn(user, (err) => {
           if (err) {
+            console.log('Login error:', err);
             return next(err);
           }
+
+          console.log('Login successful, session user:', req.user);
+          console.log('Session:', req.session);
 
           return res.status(HTTPSTATUS.OK).json({
             message: "Logged in successfully",
