@@ -88,6 +88,19 @@ app.get(
   })
 );
 
+// Test endpoint to check session
+app.get(
+  `/test-session`,
+  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    return res.status(HTTPSTATUS.OK).json({
+      message: "Session test",
+      session: req.session,
+      user: req.user,
+      cookies: req.headers.cookie
+    });
+  })
+);
+
 app.use(`${BASE_PATH}/auth`, authRoutes);
 app.use(`${BASE_PATH}/user`, isAuthenticated, userRoutes);
 app.use(`${BASE_PATH}/workspace`, isAuthenticated, workspaceRoutes);

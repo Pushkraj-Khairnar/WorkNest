@@ -26,17 +26,8 @@ const SignIn = () => {
   const [searchParams] = useSearchParams();
   const returnUrl = searchParams.get("returnUrl");
   const [showPassword, setShowPassword] = useState(false);
-  const [showDebug, setShowDebug] = useState(false);
 
-  // Add immediate debug info when component loads
-  React.useEffect(() => {
-    console.log('SignIn component loaded');
-    localStorage.setItem('loginDebug', JSON.stringify({
-      timestamp: new Date().toISOString(),
-      status: 'component_loaded',
-      message: 'SignIn component mounted'
-    }));
-  }, []);
+
 
   const { mutate, isPending } = useMutation({
     mutationFn: loginMutationFn,
@@ -60,87 +51,31 @@ const SignIn = () => {
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    try {
-      if (isPending) return;
+    if (isPending) return;
 
-      // Store debug info in localStorage so it persists through reloads
-      localStorage.setItem('loginDebug', JSON.stringify({
-        timestamp: new Date().toISOString(),
-        email: values.email,
-        status: 'attempting'
-      }));
-
-      console.log('Attempting to sign in with:', values.email);
+    console.log('Attempting to sign in with:', values.email);
 
     mutate(values, {
       onSuccess: (data) => {
-        // Store successful login data
-        localStorage.setItem('loginDebug', JSON.stringify({
-          timestamp: new Date().toISOString(),
-          email: values.email,
-          status: 'success',
-          response: data,
-          user: data.user,
-          currentWorkspace: data.user.currentWorkspace
-        }));
-
-        console.log('Login successful, response:', data);
+        console.log('Login successful:', data);
         const user = data.user;
-        console.log('User data:', user);
-        console.log('Current workspace:', user.currentWorkspace);
         
-        const decodedUrl = returnUrl ? decodeURIComponent(returnUrl) : null;
-        
-        // Handle case where user has no current workspace
         if (!user.currentWorkspace) {
-          console.log('User has no current workspace, redirecting to dashboard');
           navigate('/dashboard');
           return;
         }
         
-        const redirectUrl = decodedUrl || `/workspace/${user.currentWorkspace}`;
-        console.log('Redirecting to:', redirectUrl);
-        
-        // Store redirect info
-        localStorage.setItem('loginRedirect', redirectUrl);
-        localStorage.setItem('loginDebug', JSON.stringify({
-          timestamp: new Date().toISOString(),
-          status: 'navigating',
-          redirectUrl: redirectUrl,
-          user: user
-        }));
-        
-        // Use setTimeout to ensure navigation happens after state updates
-        setTimeout(() => {
-          console.log('Executing navigation to:', redirectUrl);
-          navigate(redirectUrl);
-        }, 100);
+        navigate(`/workspace/${user.currentWorkspace}`);
       },
       onError: (error) => {
-        // Store error data
-        localStorage.setItem('loginDebug', JSON.stringify({
-          timestamp: new Date().toISOString(),
-          email: values.email,
-          status: 'error',
-          error: error.message
-        }));
-
         console.error('Login error:', error);
         toast({
           title: "Error",
-          description: error.message,
+          description: error instanceof Error ? error.message : 'An error occurred',
           variant: "destructive",
         });
       },
     });
-    } catch (error) {
-      console.error('Error in onSubmit:', error);
-      localStorage.setItem('loginDebug', JSON.stringify({
-        timestamp: new Date().toISOString(),
-        status: 'error_in_onSubmit',
-        error: error.message
-      }));
-    }
   };
 
   return (
@@ -208,20 +143,7 @@ const SignIn = () => {
           {/* Login Form */}
           <div className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/20 dark:border-slate-700/50">
             <Form {...form}>
-              <form 
-                onSubmit={(e) => {
-                  e.preventDefault(); // Explicitly prevent default
-                  console.log('Form submitted - preventDefault called');
-                  localStorage.setItem('loginDebug', JSON.stringify({
-                    timestamp: new Date().toISOString(),
-                    status: 'form_submitted',
-                    event: 'form_onSubmit',
-                    preventDefault: true
-                  }));
-                  form.handleSubmit(onSubmit)(e);
-                }} 
-                className="space-y-6"
-              >
+                              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 {/* Google OAuth */}
                 <div className="space-y-4">
                   <GoogleOauthButton label="Continue" />
@@ -245,11 +167,13 @@ const SignIn = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      <FormLabel htmlFor="email" className="text-sm font-medium text-slate-700 dark:text-slate-300">
                         Email address
                       </FormLabel>
                       <FormControl>
                         <Input
+                          id="email"
+                          type="email"
                           placeholder="Enter your email"
                           className="h-12 px-4 bg-white/50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                           {...field}
@@ -267,7 +191,7 @@ const SignIn = () => {
                   render={({ field }) => (
                     <FormItem>
                       <div className="flex items-center justify-between">
-                        <FormLabel className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <FormLabel htmlFor="password" className="text-sm font-medium text-slate-700 dark:text-slate-300">
                           Password
                         </FormLabel>
                         <button
@@ -280,6 +204,7 @@ const SignIn = () => {
                       <FormControl>
                         <div className="relative">
                           <Input
+                            id="password"
                             type={showPassword ? "text" : "password"}
                             placeholder="Enter your password"
                             className="h-12 px-4 pr-12 bg-white/50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
@@ -289,6 +214,7 @@ const SignIn = () => {
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
                             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                            aria-label={showPassword ? "Hide password" : "Show password"}
                           >
                             {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                           </button>
@@ -315,21 +241,7 @@ const SignIn = () => {
                   )}
                 </Button>
 
-                {/* Test Button */}
-                <Button
-                  type="button"
-                  onClick={() => {
-                    console.log('Test button clicked');
-                    localStorage.setItem('loginDebug', JSON.stringify({
-                      timestamp: new Date().toISOString(),
-                      status: 'test_button_clicked'
-                    }));
-                    navigate('/dashboard');
-                  }}
-                  className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl"
-                >
-                  Test Navigation (Go to Dashboard)
-                </Button>
+
               </form>
             </Form>
 
@@ -361,40 +273,7 @@ const SignIn = () => {
             </p>
           </div>
 
-          {/* Debug Section */}
-          <div className="mt-4 text-center">
-            <button
-              type="button"
-              onClick={() => setShowDebug(!showDebug)}
-              className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-            >
-              {showDebug ? 'Hide Debug' : 'Show Debug'}
-            </button>
-            
-            {showDebug && (
-              <div className="mt-2 p-3 bg-slate-100 dark:bg-slate-700 rounded-lg text-left">
-                <h4 className="text-sm font-medium mb-2">Debug Info:</h4>
-                <pre className="text-xs overflow-auto max-h-32">
-                  {(() => {
-                    const debug = localStorage.getItem('loginDebug');
-                    const redirect = localStorage.getItem('loginRedirect');
-                    return JSON.stringify({ debug: debug ? JSON.parse(debug) : null, redirect }, null, 2);
-                  })()}
-                </pre>
-                <button
-                  type="button"
-                  onClick={() => {
-                    localStorage.removeItem('loginDebug');
-                    localStorage.removeItem('loginRedirect');
-                    setShowDebug(false);
-                  }}
-                  className="mt-2 text-xs text-red-600 hover:text-red-700"
-                >
-                  Clear Debug
-                </button>
-              </div>
-            )}
-          </div>
+
         </div>
       </div>
     </div>
