@@ -3,9 +3,15 @@ import { Button } from "../ui/button";
 
 const GoogleOauthButton = (props: { label: string }) => {
   const { label } = props;
+  
+  console.log('GoogleOauthButton rendered, baseURL:', baseURL);
 
   const handleClick = () => {
-    window.location.href = `${baseURL}/api/auth/google`;
+    alert('Button clicked! Base URL: ' + baseURL);
+    const googleAuthUrl = `${baseURL}/api/auth/google`;
+    console.log('Redirecting to:', googleAuthUrl);
+    console.log('Base URL:', baseURL);
+    window.location.href = googleAuthUrl;
   };
   
   return (
