@@ -11,6 +11,7 @@ export type LoginResponseType = {
     _id: string;
     currentWorkspace: string | null;
   };
+  token: string;
 };
 
 export type registerType = {

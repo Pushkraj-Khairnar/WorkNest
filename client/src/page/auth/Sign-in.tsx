@@ -51,6 +51,11 @@ const SignIn = () => {
       onSuccess: (data) => {
         const user = data.user;
         
+        // Store JWT token
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+        }
+        
         if (!user.currentWorkspace) {
           navigate('/dashboard');
           return;
