@@ -43,9 +43,32 @@ app.use(passport.session());
 
 app.use(
   cors({
-    origin: config.FRONTEND_ORIGIN.includes(',') 
-      ? config.FRONTEND_ORIGIN.split(',').map(origin => origin.trim())
-      : config.FRONTEND_ORIGIN,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      
+      // If FRONTEND_ORIGIN is set to wildcard, allow all origins
+      if (config.FRONTEND_ORIGIN === '*') {
+        return callback(null, true);
+      }
+      
+      // Check if origin is in the allowed list
+      const allowedOrigins = config.FRONTEND_ORIGIN.includes(',') 
+        ? config.FRONTEND_ORIGIN.split(',').map(origin => origin.trim())
+        : [config.FRONTEND_ORIGIN];
+      
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      
+      // For development, allow localhost
+      if (origin.startsWith('http://localhost:') || origin.startsWith('https://localhost:')) {
+        return callback(null, true);
+      }
+      
+      console.log('CORS blocked origin:', origin);
+      return callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
   })
 );
