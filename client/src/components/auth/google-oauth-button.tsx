@@ -3,20 +3,10 @@ import { Button } from "../ui/button";
 
 const GoogleOauthButton = (props: { label: string }) => {
   const { label } = props;
-  
-  console.log('GoogleOauthButton rendered, baseURL:', baseURL);
 
   const handleClick = () => {
     const googleAuthUrl = `${baseURL}/api/auth/google`;
-    console.log('Redirecting to:', googleAuthUrl);
-    console.log('Base URL:', baseURL);
-    
-    // Create a form and submit it to force a proper redirect
-    const form = document.createElement('form');
-    form.method = 'GET';
-    form.action = googleAuthUrl;
-    document.body.appendChild(form);
-    form.submit();
+    window.location.href = googleAuthUrl;
   };
   
   return (
