@@ -3,8 +3,8 @@ import { asyncHandler } from "../middlewares/asyncHandler.middleware";
 import { config } from "../config/app.config";
 import { registerSchema } from "../validation/auth.validation";
 import { HTTPSTATUS } from "../config/http.config";
-import { registerUserService } from "../services/auth.service";
-import passport from "passport";
+import { registerUserService, verifyUserService } from "../services/auth.service";
+import { generateToken } from "../utils/jwt";
 
 export const googleLoginCallback = asyncHandler(
   async (req: Request, res: Response) => {
@@ -40,43 +40,31 @@ export const loginController = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     console.log('Login attempt for email:', req.body.email);
     
-    passport.authenticate(
-      "local",
-      (
-        err: Error | null,
-        user: Express.User | false,
-        info: { message: string } | undefined
-      ) => {
-        if (err) {
-          console.log('Passport auth error:', err);
-          return next(err);
-        }
-
-        if (!user) {
-          console.log('Passport auth failed - no user returned');
-          return res.status(HTTPSTATUS.UNAUTHORIZED).json({
-            message: info?.message || "Invalid email or password",
-          });
-        }
-
-        console.log('Passport auth successful, user:', user._id);
-        
-        req.logIn(user, (err) => {
-          if (err) {
-            console.log('Login error:', err);
-            return next(err);
-          }
-
-          console.log('Login successful, session user:', req.user);
-          console.log('Session:', req.session);
-
-          return res.status(HTTPSTATUS.OK).json({
-            message: "Logged in successfully",
-            user,
-          });
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(HTTPSTATUS.BAD_REQUEST).json({
+          message: "Email and password are required",
         });
       }
-    )(req, res, next);
+
+      const user = await verifyUserService({ email, password });
+      const token = generateToken((user as any)._id.toString());
+
+      console.log('Login successful, user:', user._id);
+
+      return res.status(HTTPSTATUS.OK).json({
+        message: "Logged in successfully",
+        user,
+        token,
+      });
+    } catch (error: any) {
+      console.log('Login error:', error.message);
+      return res.status(HTTPSTATUS.UNAUTHORIZED).json({
+        message: error.message || "Invalid email or password",
+      });
+    }
   }
 );
 

@@ -14,7 +14,7 @@ import "./config/passport.config";
 import passport from "passport";
 import authRoutes from "./routes/auth.route";
 import userRoutes from "./routes/user.route";
-import isAuthenticated from "./middlewares/isAuthenticated.middleware";
+import jwtAuth from "./middlewares/jwtAuth.middleware";
 import workspaceRoutes from "./routes/workspace.route";
 import memberRoutes from "./routes/member.route";
 import projectRoutes from "./routes/project.route";
@@ -32,9 +32,10 @@ app.use(
     name: "session",
     keys: [config.SESSION_SECRET],
     maxAge: 24 * 60 * 60 * 1000,
-    secure: true, // Always use secure in production
+    secure: true,
     httpOnly: true,
-    sameSite: "none", // Allow cross-origin cookies
+    sameSite: "none",
+    domain: undefined, // Let the browser set the domain automatically
   })
 );
 
@@ -103,11 +104,11 @@ app.get(
 );
 
 app.use(`${BASE_PATH}/auth`, authRoutes);
-app.use(`${BASE_PATH}/user`, isAuthenticated, userRoutes);
-app.use(`${BASE_PATH}/workspace`, isAuthenticated, workspaceRoutes);
-app.use(`${BASE_PATH}/member`, isAuthenticated, memberRoutes);
-app.use(`${BASE_PATH}/project`, isAuthenticated, projectRoutes);
-app.use(`${BASE_PATH}/task`, isAuthenticated, taskRoutes);
+app.use(`${BASE_PATH}/user`, jwtAuth, userRoutes);
+app.use(`${BASE_PATH}/workspace`, jwtAuth, workspaceRoutes);
+app.use(`${BASE_PATH}/member`, jwtAuth, memberRoutes);
+app.use(`${BASE_PATH}/project`, jwtAuth, projectRoutes);
+app.use(`${BASE_PATH}/task`, jwtAuth, taskRoutes);
 
 app.use(errorHandler);
 
