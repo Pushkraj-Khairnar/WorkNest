@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/invite/workspace/:inviteCode/join",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+} 
