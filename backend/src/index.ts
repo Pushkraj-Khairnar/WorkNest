@@ -25,6 +25,11 @@ import invitationRoutes from "./routes/invitation.route";
 const app = express();
 const BASE_PATH = config.BASE_PATH;
 
+// Trust proxy for Render deployment
+if (config.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
+
 app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
@@ -66,12 +71,15 @@ app.use(
       collectionName: "sessions",
     }),
     cookie: {
-      secure: config.NODE_ENV === "production", // Only send over HTTPS in production
+      secure: config.NODE_ENV === "production", // Must be true for sameSite: none
       httpOnly: true, // Prevent XSS attacks
       maxAge: parseSessionDuration(config.SESSION_EXPIRES_IN),
       sameSite: config.NODE_ENV === "production" ? "none" : "lax", // Required for cross-origin
     },
     name: "worknest.sid", // Custom session name
+    // These settings might help with session persistence
+    rolling: true, // Reset expiry on each request
+    proxy: config.NODE_ENV === "production", // Trust proxy headers in production
   })
 );
 
@@ -84,6 +92,14 @@ app.use((req: any, res: any, next: any) => {
     console.log("Session data:", JSON.stringify(req.session, null, 2));
   }
   console.log("Cookies:", req.headers.cookie || "No cookies");
+  
+  // Hook into response to see Set-Cookie headers
+  const originalEnd = res.end;
+  res.end = function(...args: any[]) {
+    console.log("Response Set-Cookie:", res.getHeaders()['set-cookie'] || "No Set-Cookie header");
+    originalEnd.apply(res, args);
+  };
+  
   console.log("---");
   next();
 });
