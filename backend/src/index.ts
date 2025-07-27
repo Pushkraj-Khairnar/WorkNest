@@ -28,6 +28,14 @@ app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
 
+// CORS should be before session middleware
+app.use(
+  cors({
+    origin: config.FRONTEND_ORIGIN,
+    credentials: true,
+  })
+);
+
 // Parse session duration (supports formats like "24h", "1440m", or milliseconds)
 const parseSessionDuration = (duration: string): number => {
   if (!duration) return 24 * 60 * 60 * 1000; // default 24 hours
@@ -55,18 +63,28 @@ app.use(
     secure: config.NODE_ENV === "production",
     httpOnly: true,
     sameSite: config.NODE_ENV === "production" ? "none" : "lax",
+    // Add domain for production to ensure cookies work across subdomains
+    ...(config.NODE_ENV === "production" && {
+      domain: undefined // Let browser handle domain automatically
+    }),
   })
 );
+
+// Add session debugging middleware
+app.use((req: any, res: any, next: any) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  console.log("Session ID:", req.sessionID || "No session ID");
+  console.log("Session object exists:", !!req.session);
+  if (req.session) {
+    console.log("Session keys:", Object.keys(req.session));
+    console.log("Session data:", JSON.stringify(req.session, null, 2));
+  }
+  console.log("---");
+  next();
+});
 
 app.use(passport.initialize());
 app.use(passport.session());
-
-app.use(
-  cors({
-    origin: config.FRONTEND_ORIGIN,
-    credentials: true,
-  })
-);
 
 // Health check endpoint for Render
 app.get(`${BASE_PATH}/health`, (req: Request, res: Response) => {
