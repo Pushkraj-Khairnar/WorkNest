@@ -57,9 +57,13 @@ export const loginController = asyncHandler(
 
         req.logIn(user, (err) => {
           if (err) {
+            console.error("Login error:", err);
             return next(err);
           }
 
+          console.log("User logged in successfully:", user._id);
+          console.log("Session after login:", req.session);
+          
           return res.status(HTTPSTATUS.OK).json({
             message: "Logged in successfully",
             user,
