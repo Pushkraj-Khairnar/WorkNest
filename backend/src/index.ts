@@ -28,11 +28,30 @@ app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
 
+// Parse session duration (supports formats like "24h", "1440m", or milliseconds)
+const parseSessionDuration = (duration: string): number => {
+  if (!duration) return 24 * 60 * 60 * 1000; // default 24 hours
+  
+  const match = duration.match(/^(\d+)(h|m|s|d)?$/);
+  if (!match) return parseInt(duration) || 24 * 60 * 60 * 1000;
+  
+  const [, value, unit] = match;
+  const num = parseInt(value);
+  
+  switch (unit) {
+    case 'd': return num * 24 * 60 * 60 * 1000;
+    case 'h': return num * 60 * 60 * 1000;
+    case 'm': return num * 60 * 1000;
+    case 's': return num * 1000;
+    default: return num; // assume milliseconds
+  }
+};
+
 app.use(
   session({
     name: "session",
     keys: [config.SESSION_SECRET],
-    maxAge: 24 * 60 * 60 * 1000,
+    maxAge: parseSessionDuration(config.SESSION_EXPIRES_IN),
     secure: config.NODE_ENV === "production",
     httpOnly: true,
     sameSite: config.NODE_ENV === "production" ? "none" : "lax",
