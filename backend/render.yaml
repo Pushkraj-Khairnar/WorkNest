@@ -1,0 +1,6 @@
+# Build command: npm run build
+# Start command: npm start
+version: 1
+runtime: node
+build: npm install && npm run build
+start: npm start

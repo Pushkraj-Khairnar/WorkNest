@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: unDraw (https://undraw.co/) | License: MIT -->
+<svg width="100%" height="100%" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="400" cy="550" rx="320" ry="30" fill="#E6E6E6"/>
+  <g>
+    <path d="M400 400 Q420 350 440 400 T480 400 Q500 350 520 400" fill="#6C63FF"/>
+    <rect x="390" y="200" width="60" height="200" rx="30" fill="#6C63FF"/>
+    <ellipse cx="420" cy="220" rx="20" ry="30" fill="#3F3D56"/>
+    <ellipse cx="420" cy="220" rx="10" ry="15" fill="#fff"/>
+    <rect x="410" y="400" width="20" height="60" rx="10" fill="#3F3D56"/>
+    <ellipse cx="420" cy="470" rx="20" ry="10" fill="#6C63FF"/>
+    <ellipse cx="420" cy="470" rx="10" ry="5" fill="#3F3D56"/>
+    <ellipse cx="420" cy="470" rx="5" ry="2.5" fill="#fff"/>
+  </g>
+  <g>
+    <ellipse cx="320" cy="480" rx="30" ry="10" fill="#E6E6E6"/>
+    <ellipse cx="320" cy="470" rx="20" ry="30" fill="#6C63FF"/>
+    <ellipse cx="320" cy="470" rx="10" ry="15" fill="#fff"/>
+    <rect x="310" y="500" width="20" height="40" rx="10" fill="#3F3D56"/>
+    <ellipse cx="320" cy="545" rx="20" ry="10" fill="#6C63FF"/>
+    <ellipse cx="320" cy="545" rx="10" ry="5" fill="#3F3D56"/>
+    <ellipse cx="320" cy="545" rx="5" ry="2.5" fill="#fff"/>
+  </g>
+  <g>
+    <ellipse cx="500" cy="480" rx="30" ry="10" fill="#E6E6E6"/>
+    <ellipse cx="500" cy="470" rx="20" ry="30" fill="#6C63FF"/>
+    <ellipse cx="500" cy="470" rx="10" ry="15" fill="#fff"/>
+    <rect x="490" y="500" width="20" height="40" rx="10" fill="#3F3D56"/>
+    <ellipse cx="500" cy="545" rx="20" ry="10" fill="#6C63FF"/>
+    <ellipse cx="500" cy="545" rx="10" ry="5" fill="#3F3D56"/>
+    <ellipse cx="500" cy="545" rx="5" ry="2.5" fill="#fff"/>
+  </g>
+  <g>
+    <ellipse cx="600" cy="500" rx="30" ry="10" fill="#E6E6E6"/>
+    <ellipse cx="600" cy="490" rx="20" ry="30" fill="#6C63FF"/>
+    <ellipse cx="600" cy="490" rx="10" ry="15" fill="#fff"/>
+    <rect x="590" y="520" width="20" height="40" rx="10" fill="#3F3D56"/>
+    <ellipse cx="600" cy="565" rx="20" ry="10" fill="#6C63FF"/>
+    <ellipse cx="600" cy="565" rx="10" ry="5" fill="#3F3D56"/>
+    <ellipse cx="600" cy="565" rx="5" ry="2.5" fill="#fff"/>
+  </g>
+  <g>
+    <ellipse cx="250" cy="500" rx="30" ry="10" fill="#E6E6E6"/>
+    <ellipse cx="250" cy="490" rx="20" ry="30" fill="#6C63FF"/>
+    <ellipse cx="250" cy="490" rx="10" ry="15" fill="#fff"/>
+    <rect x="240" y="520" width="20" height="40" rx="10" fill="#3F3D56"/>
+    <ellipse cx="250" cy="565" rx="20" ry="10" fill="#6C63FF"/>
+    <ellipse cx="250" cy="565" rx="10" ry="5" fill="#3F3D56"/>
+    <ellipse cx="250" cy="565" rx="5" ry="2.5" fill="#fff"/>
+  </g>
+  <!-- Character sitting next to rocket -->
+  <g>
+    <ellipse cx="350" cy="520" rx="40" ry="10" fill="#E6E6E6"/>
+    <ellipse cx="350" cy="500" rx="20" ry="30" fill="#3F3D56"/>
+    <rect x="340" y="520" width="20" height="40" rx="10" fill="#6C63FF"/>
+    <ellipse cx="350" cy="565" rx="20" ry="10" fill="#3F3D56"/>
+    <ellipse cx="350" cy="565" rx="10" ry="5" fill="#6C63FF"/>
+    <ellipse cx="350" cy="565" rx="5" ry="2.5" fill="#fff"/>
+  </g>
+</svg> 
