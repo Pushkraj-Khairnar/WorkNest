@@ -86,18 +86,25 @@ export const logOutController = asyncHandler(
     });
 
     // Destroy the session for express-session
-    req.session.destroy((err) => {
-      if (err) {
-        console.error("Session destroy error:", err);
+    if (req.session) {
+      req.session.destroy((err: any) => {
+        if (err) {
+          console.error("Session destroy error:", err);
+          return res
+            .status(HTTPSTATUS.INTERNAL_SERVER_ERROR)
+            .json({ error: "Failed to destroy session" });
+        }
+        
+        res.clearCookie("worknest.sid");
         return res
-          .status(HTTPSTATUS.INTERNAL_SERVER_ERROR)
-          .json({ error: "Failed to destroy session" });
-      }
-      
+          .status(HTTPSTATUS.OK)
+          .json({ message: "Logged out successfully" });
+      });
+    } else {
       res.clearCookie("worknest.sid");
       return res
         .status(HTTPSTATUS.OK)
         .json({ message: "Logged out successfully" });
-    });
+    }
   }
 );
