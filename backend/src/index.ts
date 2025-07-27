@@ -1,7 +1,8 @@
 import "dotenv/config";
 import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
-import session from "cookie-session";
+import session from "express-session";
+import MongoStore from "connect-mongo";
 import { config } from "./config/app.config";
 import connectDatabase from "./config/database.config";
 import { errorHandler } from "./middlewares/errorHandler.middleware";
@@ -57,16 +58,20 @@ const parseSessionDuration = (duration: string): number => {
 
 app.use(
   session({
-    name: "session",
-    keys: [config.SESSION_SECRET],
-    maxAge: parseSessionDuration(config.SESSION_EXPIRES_IN),
-    secure: config.NODE_ENV === "production",
-    httpOnly: true,
-    sameSite: config.NODE_ENV === "production" ? "none" : "lax",
-    // Add domain for production to ensure cookies work across subdomains
-    ...(config.NODE_ENV === "production" && {
-      domain: undefined // Let browser handle domain automatically
+    secret: config.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: config.MONGO_URI,
+      collectionName: "sessions",
     }),
+    cookie: {
+      secure: config.NODE_ENV === "production", // Only send over HTTPS in production
+      httpOnly: true, // Prevent XSS attacks
+      maxAge: parseSessionDuration(config.SESSION_EXPIRES_IN),
+      sameSite: config.NODE_ENV === "production" ? "none" : "lax", // Required for cross-origin
+    },
+    name: "worknest.sid", // Custom session name
   })
 );
 
@@ -76,9 +81,9 @@ app.use((req: any, res: any, next: any) => {
   console.log("Session ID:", req.sessionID || "No session ID");
   console.log("Session object exists:", !!req.session);
   if (req.session) {
-    console.log("Session keys:", Object.keys(req.session));
     console.log("Session data:", JSON.stringify(req.session, null, 2));
   }
+  console.log("Cookies:", req.headers.cookie || "No cookies");
   console.log("---");
   next();
 });
